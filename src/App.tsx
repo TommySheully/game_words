@@ -1,15 +1,20 @@
-import { useState } from 'react'
 import './App.css'
+import { useGameContext } from '@/store/context.tsx';
+import { useState } from 'react';
+import Game from '@/components/Game.tsx';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { isLoading, setIsLoading } = useGameContext()
+  const [isGame, setIsGame] = useState(true);
 
   return (
-    <>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-    </>
+    <div className="flex justify-center w-full min:h-[100vh]">
+      <div className="w-full max-w-[640px] h-full border-2">
+
+        {isGame && <Game/>}
+
+      </div>
+    </div>
   )
 }
 
