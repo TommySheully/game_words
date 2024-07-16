@@ -1,53 +1,54 @@
-import React, { useState } from 'react';
+import React, { Dispatch, useState } from 'react';
+import clsx from 'clsx';
+import { useCoordinates } from '@/hook/useCoordinates.ts';
 
 type Props = {
-  letters: string[]; // массив букв на игровом поле
+  letters: string[];
+  selectedWord: string
+  onSelectedWordChange: Dispatch<React.SetStateAction<string>>;
 };
 
-const GameBoard: React.FC<Props> = ({ letters }) => {
-  const [selectedWord, setSelectedWord] = useState<string>(''); // текущее выделенное слово
+
+const GameBoard: React.FC<Props> = ({ letters, onSelectedWordChange }) => {
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]); // индексы выбранных букв
 
   const handleMouseDown = (index: number) => {
-    // Обработчик нажатия на букву
-    setSelectedWord(letters[index]); // начать новое слово с этой буквы
-    setSelectedIndices([index]); // установить текущий индекс
+    onSelectedWordChange(letters[index]);
+    setSelectedIndices([index]);
   };
 
   const handleMouseEnter = (index: number) => {
-    // Обработчик наведения на букву
     if (selectedIndices.length > 0 && index !== selectedIndices[selectedIndices.length - 1]) {
-      // добавить букву к текущему слову, если это новая буква и не предыдущая
-      setSelectedWord(prev => prev + letters[index]);
+      onSelectedWordChange(prev => prev + letters[index]);
       setSelectedIndices(prev => [...prev, index]);
     }
   };
 
   const handleMouseUp = () => {
-    // Обработчик отпускания кнопки мыши
-    // здесь можно добавить логику для проверки слова и его расположения
-    console.log('Выбранное слово:', selectedWord);
-
-    // Сбросить выбор
-    setSelectedWord('');
+    onSelectedWordChange('');
     setSelectedIndices([]);
   };
 
+  const radius = 100;
+  const coordinates = useCoordinates(letters, radius);
+
   return (
-    <div className="bg-gray-300 rounded-full p-8">
-      <div className="grid grid-cols-5 gap-2">
-        {letters.map((letter, index) => (
-          <div
-            key={index}
-            className={`flex justify-center items-center w-12 h-12 rounded-full cursor-pointer select-none ${selectedIndices.includes(index) ? 'bg-pink-300' : ''}`}
-            onMouseDown={() => handleMouseDown(index)}
-            onMouseEnter={() => handleMouseEnter(index)}
-            onMouseUp={handleMouseUp}
-          >
-            {letter}
-          </div>
-        ))}
-      </div>
+    <div className="flex justify-center items-center rounded-full p-8 w-[200px] h-[200px] border-[20px] border-back relative mt-[50px]">
+      {coordinates.map(({ letter, x, y }, index) => (
+        <div
+          key={index}
+          className={clsx(
+            'flex justify-center items-center w-[60px] h-[60px] rounded-full select-none absolute bg-gray',
+            selectedIndices.includes(index) ? 'bg-pink' : 'bg-gray'
+          )}
+          onMouseDown={() => handleMouseDown(index)}
+          onMouseEnter={() => handleMouseEnter(index)}
+          onMouseUp={handleMouseUp}
+          style={{ left: `${x}px`, top: `${y}px` }}
+        >
+          <span className={clsx('text-4xl uppercase font-bold', selectedIndices.includes(index) ? 'text-white' : 'text-main')}>{letter}</span>
+        </div>
+      ))}
     </div>
   );
 };

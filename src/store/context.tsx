@@ -2,29 +2,30 @@ import { createContext, Dispatch, SetStateAction, useContext, useEffect, useMemo
 
 import type { FC, ReactNode } from 'react';
 import { levels } from '@/assets/levels';
+import _ from 'lodash';
 
 export type GameContextProps = {
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
+  setWords: Dispatch<SetStateAction<Words[]>>;
 
   level: Level
   words: Words[]
 };
-
-const GameContext = createContext<GameContextProps>({} as GameContextProps);
 
 type IAuthProviderProps = {
   children: ReactNode;
 };
 
 type Level = '1'|'2'|'3'
-type Words = {word: string, isGuess: boolean}
+export type Words = {word: string, isGuess: boolean}
+
+const GameContext = createContext<GameContextProps>({} as GameContextProps);
 
 const reductionToType = (arr: string[]) => {
   const lsValue = localStorage.getItem('words');
-  const lsItems = lsValue ? JSON.parse(lsValue) : [];
-
-  return arr.map(e => ({ word: e, isGuess: lsItems.includes(e) })).sort((a, b) => a.word.length - b.word.length);
+  const lsItems = lsValue ? JSON.parse(lsValue) as Words[] : [];
+  return arr.map(e => ({ word: e, isGuess: _.some(lsItems, { word: e }) })).sort((a, b) => a.word.length - b.word.length);
 };
 
 export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
@@ -46,12 +47,14 @@ export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
       words,
       level,
       setIsLoading,
+      setWords,
     }),
     [
       isLoading,
       setIsLoading,
       words,
       level,
+      setWords
     ],
   );
 
