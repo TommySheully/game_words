@@ -1,17 +1,19 @@
-import './App.css'
+import './App.css';
 import { useGameContext } from '@/store/context.tsx';
-import { useState } from 'react';
-import Game from '@/components/Game.tsx';
+import Game from '@/components/game/Game.tsx';
+import { Info } from '@/components/Info.tsx';
+import { Update } from '@/components/Update.tsx';
 
 function App() {
-  const { isLoading, setIsLoading } = useGameContext()
-  const [isGame, setIsGame] = useState(true);
+  const { status  } = useGameContext()
 
   return (
     <div className="flex justify-center w-full min:h-[100vh]">
       <div className="w-full max-w-[640px] h-full border-2">
 
-        {isGame && <Game/>}
+        {status === "game" && <Game/>}
+        {status === "info" && <Info/>}
+        {false  && <Update onUpdate={() => {}} />}
 
       </div>
     </div>

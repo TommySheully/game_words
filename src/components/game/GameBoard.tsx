@@ -10,7 +10,7 @@ type Props = {
 
 
 const GameBoard: React.FC<Props> = ({ letters, onSelectedWordChange }) => {
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([]); // индексы выбранных букв
+  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
 
   const handleMouseDown = (index: number) => {
     onSelectedWordChange(letters[index]);
@@ -33,7 +33,7 @@ const GameBoard: React.FC<Props> = ({ letters, onSelectedWordChange }) => {
   const coordinates = useCoordinates(letters, radius);
 
   return (
-    <div className="flex justify-center items-center rounded-full p-8 w-[200px] h-[200px] border-[20px] border-back relative mt-[50px]">
+    <div className="flex justify-center items-center rounded-full p-8 w-[200px] h-[200px] border-[20px] border-back relative my-[50px]">
       {coordinates.map(({ letter, x, y }, index) => (
         <div
           key={index}

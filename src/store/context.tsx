@@ -2,11 +2,17 @@ import { createContext, Dispatch, SetStateAction, useContext, useEffect, useMemo
 
 import type { FC, ReactNode } from 'react';
 import { levels } from '@/assets/levels';
-import _ from 'lodash';
+import { reductionToType } from '@/util/reductionToType.ts';
+
+
+export type Status = 'game'|'info'|'warning'
+export type Level = '1'|'2'|'3'
+export type Words = {word: string, isGuess: boolean}
 
 export type GameContextProps = {
-  isLoading: boolean;
-  setIsLoading: Dispatch<SetStateAction<boolean>>;
+  status: Status;
+  setLevel: Dispatch<SetStateAction<Level>>;
+  setStatus: Dispatch<SetStateAction<Status>>;
   setWords: Dispatch<SetStateAction<Words[]>>;
 
   level: Level
@@ -17,24 +23,19 @@ type IAuthProviderProps = {
   children: ReactNode;
 };
 
-type Level = '1'|'2'|'3'
-export type Words = {word: string, isGuess: boolean}
-
 const GameContext = createContext<GameContextProps>({} as GameContextProps);
 
-const reductionToType = (arr: string[]) => {
-  const lsValue = localStorage.getItem('words');
-  const lsItems = lsValue ? JSON.parse(lsValue) as Words[] : [];
-  return arr.map(e => ({ word: e, isGuess: _.some(lsItems, { word: e }) })).sort((a, b) => a.word.length - b.word.length);
-};
-
 export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [status, setStatus] = useState<Status>("game");
+
   const [level, setLevel] = useState<Level>(localStorage.getItem('level') as Level || '1');
   const [words, setWords] = useState<Words[]>(reductionToType(levels[level]));
 
   useEffect(() => {
     localStorage.setItem('level', level);
+    setWords(reductionToType(levels[level]))
+    setStatus('game')
   }, [level]);
 
   useEffect(() => {
@@ -42,20 +43,8 @@ export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
   }, [words]);
 
   const value: GameContextProps = useMemo(
-    () => ({
-      isLoading,
-      words,
-      level,
-      setIsLoading,
-      setWords,
-    }),
-    [
-      isLoading,
-      setIsLoading,
-      words,
-      level,
-      setWords
-    ],
+    () => ({ status, words, level, setLevel, setStatus, setWords, }),
+    [status, setStatus, words, level, setLevel, setWords],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
