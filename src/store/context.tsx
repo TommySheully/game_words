@@ -7,7 +7,7 @@ import { reductionToType } from '@/util/reductionToType.ts';
 
 export type Status = 'game'|'info'|'warning'
 export type Level = '1'|'2'|'3'
-export type Words = {word: string, isGuess: boolean}
+export type Words = {word: string, open: boolean}
 
 export type GameContextProps = {
   status: Status;
@@ -26,9 +26,7 @@ type IAuthProviderProps = {
 const GameContext = createContext<GameContextProps>({} as GameContextProps);
 
 export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
-
   const [status, setStatus] = useState<Status>("game");
-
   const [level, setLevel] = useState<Level>(localStorage.getItem('level') as Level || '1');
   const [words, setWords] = useState<Words[]>(reductionToType(levels[level]));
 
@@ -39,7 +37,7 @@ export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
   }, [level]);
 
   useEffect(() => {
-     localStorage.setItem('words', JSON.stringify(words.filter(e => e.isGuess)));
+     localStorage.setItem('words', JSON.stringify(words.filter(e => e.open)));
   }, [words]);
 
   const value: GameContextProps = useMemo(

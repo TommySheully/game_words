@@ -1,56 +1,42 @@
-import React, { Dispatch, useState } from 'react';
+import React, { Dispatch } from 'react';
 import clsx from 'clsx';
-import { useCoordinates } from '@/hook/useCoordinates.ts';
+import { useRotation } from '@/hook/useRotation.ts';
+
+const RADIUS = 100;
 
 type Props = {
   letters: string[];
-  selectedWord: string
+  selectedWord: string;
   onSelectedWordChange: Dispatch<React.SetStateAction<string>>;
 };
 
+const LetterPicker = ({ letters, selectedWord, onSelectedWordChange }: Props) => {
+  const points = useRotation(letters.length, RADIUS);
 
-const GameBoard: React.FC<Props> = ({ letters, onSelectedWordChange }) => {
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-
-  const handleMouseDown = (index: number) => {
-    onSelectedWordChange(letters[index]);
-    setSelectedIndices([index]);
-  };
-
-  const handleMouseEnter = (index: number) => {
-    if (selectedIndices.length > 0 && index !== selectedIndices[selectedIndices.length - 1]) {
-      onSelectedWordChange(prev => prev + letters[index]);
-      setSelectedIndices(prev => [...prev, index]);
-    }
-  };
-
-  const handleMouseUp = () => {
-    onSelectedWordChange('');
-    setSelectedIndices([]);
-  };
-
-  const radius = 100;
-  const coordinates = useCoordinates(letters, radius);
+  const handleMouseDown = (letter: string) => onSelectedWordChange(letter);
+  const handleMouseEnter = (letter: string) =>
+    selectedWord.length && letter !== selectedWord.at(-1) && onSelectedWordChange((prev) => prev + letter);
 
   return (
     <div className="flex justify-center items-center rounded-full p-8 w-[200px] h-[200px] border-[20px] border-back relative my-[50px]">
-      {coordinates.map(({ letter, x, y }, index) => (
+      {points.map(({ x, y }, i) => (
         <div
-          key={index}
+          key={letters[i]}
           className={clsx(
-            'flex justify-center items-center w-[60px] h-[60px] rounded-full select-none absolute bg-gray',
-            selectedIndices.includes(index) ? 'bg-pink' : 'bg-gray'
+            'flex justify-center items-center w-[60px] h-[60px] rounded-full select-none absolute',
+            selectedWord.includes(letters[i]) ? 'bg-pink' : 'bg-gray',
           )}
-          onMouseDown={() => handleMouseDown(index)}
-          onMouseEnter={() => handleMouseEnter(index)}
-          onMouseUp={handleMouseUp}
+          onMouseDown={() => handleMouseDown(letters[i])}
+          onMouseEnter={() => handleMouseEnter(letters[i])}
           style={{ left: `${x}px`, top: `${y}px` }}
         >
-          <span className={clsx('text-4xl uppercase font-bold', selectedIndices.includes(index) ? 'text-white' : 'text-main')}>{letter}</span>
+          <span className={clsx('text-4xl uppercase font-bold', selectedWord.includes(letters[i]) ? 'text-white' : 'text-main')}>
+            {letters[i]}
+          </span>
         </div>
       ))}
     </div>
   );
 };
 
-export default GameBoard;
+export default LetterPicker;
