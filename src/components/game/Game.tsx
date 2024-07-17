@@ -1,21 +1,33 @@
 import { useGameContext } from '@/store/context.tsx';
 import { Letter } from '@/components/game/Letter.tsx';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import LetterPicker from '@/components/game/GameBoard.tsx';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import LetterPicker from '@/components/game/LetterPicker.tsx';
 import _ from 'lodash';
 import { getUniqLetters } from '@/util/words.ts';
+import { useEvent } from '@/hook/useEvent.ts';
 
 export default function Game() {
   const { words, level, setWords, setStatus } = useGameContext();
   const [selectedWord, setSelectedWord] = useState<string>('');
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const letters = useMemo(() => _.shuffle(getUniqLetters(words.map((w) => w.word))), [level]);
 
   const handleFinishWord = useCallback(() => {
-    setWords(words.map((x) => (x.word === selectedWord ? { ...x, open: true } : x)));
-    setSelectedWord('');
+    if (selectedWord) {
+      setWords(words.map((x) => (x.word === selectedWord ? { ...x, open: true } : x)));
+      setSelectedWord('');
+    }
   }, [selectedWord, setWords, words]);
-  useMouseUp(handleFinishWord);
+  const handleLetterClick = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(handleFinishWord, 1500);
+  }, [handleFinishWord]);
+
+  useEvent("mouseup", handleFinishWord);
+  useEvent("touchend",handleLetterClick);
 
   // Game over
   useEffect(() => {
@@ -28,7 +40,7 @@ export default function Game() {
   return (
     <div className="flex flex-col items-center justify-start w-full p-2 gap-6 h-full">
       <div className="flex flex-col gap-2 items-center w-full">
-        <h2 className="text-4xl pb-2">Уровень {level}</h2>
+        <h2 className="text-4xl pb-2">Уровень {level +1}</h2>
         {words.map((e, i) => (
           <div key={`word-${e.word}-${i}`} className="flex justify-center gap-2 w-full">
             {e.word.split('').map((l, index) => (
@@ -46,14 +58,7 @@ export default function Game() {
         ))}
       </div>
 
-      <LetterPicker onSelectedWordChange={setSelectedWord} selectedWord={selectedWord} letters={letters} />
+      <LetterPicker onLetterClick={handleLetterClick} onSelectedWordChange={setSelectedWord} selectedWord={selectedWord} letters={letters} />
     </div>
   );
 }
-
-const useMouseUp = (callback: () => void) => {
-  useEffect(() => {
-    document.addEventListener('mouseup', callback);
-    return () => document.removeEventListener('mouseup', callback);
-  }, [callback]);
-};

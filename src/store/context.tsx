@@ -6,16 +6,15 @@ import { reductionToType } from '@/util/reductionToType.ts';
 
 
 export type Status = 'game'|'info'|'warning'
-export type Level = '1'|'2'|'3'
 export type Words = {word: string, open: boolean}
 
 export type GameContextProps = {
   status: Status;
-  setLevel: Dispatch<SetStateAction<Level>>;
+  setLevel: Dispatch<SetStateAction<number>>;
   setStatus: Dispatch<SetStateAction<Status>>;
   setWords: Dispatch<SetStateAction<Words[]>>;
 
-  level: Level
+  level: number
   words: Words[]
 };
 
@@ -27,13 +26,13 @@ const GameContext = createContext<GameContextProps>({} as GameContextProps);
 
 export const GameProvider: FC<IAuthProviderProps> = ({ children }) => {
   const [status, setStatus] = useState<Status>("game");
-  const [level, setLevel] = useState<Level>(localStorage.getItem('level') as Level || '1');
-  const [words, setWords] = useState<Words[]>(reductionToType(levels[level]));
+  const [level, setLevel] = useState<number>(parseInt(localStorage.getItem('level') || '0'));
+  const [words, setWords] = useState<Words[]>(reductionToType(levels[level % levels.length]));
 
   useEffect(() => {
-    localStorage.setItem('level', level);
-    setWords(reductionToType(levels[level]))
-    setStatus('game')
+    localStorage.setItem('level', level.toString());
+    setWords(reductionToType(levels[level % levels.length]));
+    setStatus('game');
   }, [level]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/Button.tsx';
-import { Level, useGameContext } from '@/store/context.tsx';
+import { useGameContext } from '@/store/context.tsx';
 import { reductionToType } from '@/util/reductionToType.ts';
 import { levels } from '@/assets/levels';
 import { popup } from '@/assets';
@@ -13,7 +13,7 @@ export const Update = ({ onUpdate }: Props) => {
   const { setWords, setLevel } = useGameContext();
 
   const handleUpdate = () => {
-    const level = (localStorage.getItem('level') as Level) || '1';
+    const level = parseInt(localStorage.getItem('level') || '0')
     setLevel(level);
     setWords(reductionToType(levels[level]));
     const sessionId = sessionStorage.getItem('sessionId');
